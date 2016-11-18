@@ -7,6 +7,8 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.StringTokenizer;
+import net.sourceforge.jFuzzyLogic.FIS;
+import net.sourceforge.jFuzzyLogic.rule.Rule;
  
 public class RemoteDriver {
 	
@@ -14,10 +16,14 @@ public class RemoteDriver {
 	static String host = "localhost";
 	
     public static void main(String[] args) throws IOException {
+    	System.out.println("Start");
         	    	
         Socket kkSocket = null;
         PrintWriter out = null;
         BufferedReader in = null;
+        FIS fis;
+        fis = FIS.load("./fuzzy.fcl", true);
+        System.out.println("Pass");
  
         try {
             kkSocket = new Socket(host, port);
@@ -49,9 +55,11 @@ public class RemoteDriver {
         	
         	// TODO sua lógica fuzzy vai aqui use os valores de x,y e angle obtidos. x e y estao em [0,1] e angulo [0,360)
 			
-        	Double teste = Double.valueOf(stdIn.readLine());
+        	//Double teste = Double.valueOf(stdIn.readLine());
+        	Double teste = getAngle(fis, x, angle);
+        	System.out.println("Output angle "+teste);
         	
-        	Double respostaDaSuaLogica = teste; // atribuir um valor entre -1 e 1 para virar o volante pra esquerda ou direita.
+        	Double respostaDaSuaLogica = teste/30.0; // atribuir um valor entre -1 e 1 para virar o volante pra esquerda ou direita.
         	
         	// Acaba sua modificacao aqui
         	// envio da acao do volante
@@ -67,8 +75,14 @@ public class RemoteDriver {
         kkSocket.close();
     }
     
-    public double getValue(){
-    	double val = 0.0;
-    	return val;
+    public static Double getAngle(FIS fis, double x, double angle){
+    	fis.setVariable("angle", angle);
+    	fis.setVariable("xposition", x);
+    	fis.evaluate();
+    	double angleVal = fis.getVariable("direction").getValue();
+    	//for( Rule r : fis.getFunctionBlock("truckPark").getFuzzyRuleBlock("No1").getRules() )
+    	//	System.out.println(r);
+    	//double val = 0.0;
+    	return angleVal;
     }
 }

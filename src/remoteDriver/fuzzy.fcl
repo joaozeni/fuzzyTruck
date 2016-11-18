@@ -1,0 +1,89 @@
+FUNCTION_BLOCK truckPark
+
+VAR_INPUT				// Define input variables
+	angle : REAL;
+	xposition : REAL;
+END_VAR
+
+VAR_OUTPUT				// Define output variable
+	direction : REAL;
+END_VAR
+
+FUZZIFY angle			// Fuzzify input variable
+	TERM superiorDownAcute := (0, 0.00) (25, 1.0) (50.0, 0.0);
+	TERM superiorUpAcute := (40.0, 0.0) (62.5, 1.0) (87.0, 0.0);
+	TERM superiorRight := (80.0, 0.0) (90.0, 1.0) (100.0, 0.0);
+	TERM superiorUpObtuse := (93.0, 0.0) (117.5, 1.0) (140.0, 0.0);
+	TERM superiorDownObtuse := (130.0, 0.0) (157.5, 1.0) (185.0, 0.0);
+	TERM inferiorAcute := (170.0, 0.0) (225.0, 1.0) (280.0, 0.0);
+	TERM inferiorObtuse := (260.0, 0.0) (310.0, 1.0) (360.0, 0.0);
+END_FUZZIFY
+
+FUZZIFY xposition			// Fuzzify input variable
+	TERM left := (0.0, 0.0) (0.0, 1.0) (0.12, 1.0) (0.35, 0.0);
+	TERM leftCenter := (0.30, 0.0) (0.4, 1.0) (0.5, 0.0);
+	TERM center := (0.45, 0.0) (0.5, 1.0) (0.55, 0.0);
+	TERM rightCenter := (0.50, 0.0) (0.6, 1.0) (0.7, 0.0);
+	TERM right := (0.65, 0.0) (0.88, 1.0) (1.0, 1.0) (1.0, 0.0);
+END_FUZZIFY
+
+DEFUZZIFY direction			// Defzzzify output variable
+	TERM negativeBig := (-30.0, 0.0) (-30.0, 1.0) (-15.0, 0.0);
+	TERM negativeMedium := (-25.0, 0.0) (-15.0, 1.0) (-5.0, 0.0);
+	TERM negativeSmall := (-10.0, 0.0) (-5.0, 1.0) (0.0, 0.0);
+	TERM zero := (-5.0, 0.0) (0.0, 1.0) (5.0, 0.0);
+	TERM positiveSmall := (0.0, 0.0) (5.0, 1.0) (10.0, 0.0);
+	TERM positiveMedium := (5.0, 0.0) (15.0, 1.0) (25.0, 0.0);
+	TERM positiveBig := (15.0, 0.0) (30.0, 1.0) (30.0, 0.0);
+	METHOD : COG;		// Use 'Center Of Gravity' defuzzification method
+	DEFAULT := 0;		// Default value is 0 (if no rule activates defuzzifier)
+END_DEFUZZIFY
+
+RULEBLOCK No1
+	AND : MIN;			// Use 'min' for 'and' (also implicit use 'max' for 'or' to fulfill DeMorgan's Law)
+	ACT : MIN;			// Use 'min' activation method
+	ACCU : MAX;			// Use 'max' accumulation method
+
+	RULE 1 : IF xposition IS left AND angle IS superiorDownAcute THEN direction IS positiveBig;
+	RULE 2 : IF xposition IS left AND angle IS superiorUpAcute THEN direction IS positiveBig;
+	RULE 3 : IF xposition IS left AND angle IS superiorRight THEN direction IS positiveBig;
+	RULE 4 : IF xposition IS left AND angle IS superiorUpObtuse THEN direction IS positiveMedium;
+	RULE 5 : IF xposition IS left AND angle IS superiorDownObtuse THEN direction IS zero;
+	RULE 6 : IF xposition IS left AND angle IS inferiorAcute THEN direction IS negativeBig;
+	RULE 7 : IF xposition IS left AND angle IS inferiorObtuse THEN direction IS negativeBig;
+
+	RULE 8  : IF xposition IS leftCenter AND angle IS superiorDownAcute THEN direction IS positiveBig;
+	RULE 9  : IF xposition IS leftCenter AND angle IS superiorUpAcute THEN direction IS positiveMedium;
+	RULE 10 : IF xposition IS leftCenter AND angle IS superiorRight THEN direction IS positiveSmall;
+	RULE 11 : IF xposition IS leftCenter AND angle IS superiorUpObtuse THEN direction IS negativeSmall;
+	RULE 12 : IF xposition IS leftCenter AND angle IS superiorDownObtuse THEN direction IS negativeMedium;
+	RULE 13 : IF xposition IS leftCenter AND angle IS inferiorAcute THEN direction IS negativeBig;
+	RULE 14 : IF xposition IS leftCenter AND angle IS inferiorObtuse THEN direction IS positiveBig;
+
+	RULE 15 : IF xposition IS center AND angle IS superiorDownAcute THEN direction IS positiveBig;
+	RULE 16 : IF xposition IS center AND angle IS superiorUpAcute THEN direction IS positiveMedium;
+	RULE 17 : IF xposition IS center AND angle IS superiorRight THEN direction IS zero;
+	RULE 18 : IF xposition IS center AND angle IS superiorUpObtuse THEN direction IS negativeMedium;
+	RULE 19 : IF xposition IS center AND angle IS superiorDownObtuse THEN direction IS negativeBig;
+	RULE 20 : IF xposition IS center AND angle IS inferiorAcute THEN direction IS negativeMedium;
+	RULE 21 : IF xposition IS center AND angle IS inferiorObtuse THEN direction IS positiveMedium;
+
+	RULE 22 : IF xposition IS rightCenter AND angle IS superiorDownAcute THEN direction IS positiveMedium;
+	RULE 23 : IF xposition IS rightCenter AND angle IS superiorUpAcute THEN direction IS positiveSmall;
+	RULE 24 : IF xposition IS rightCenter AND angle IS superiorRight THEN direction IS negativeSmall;
+	RULE 25 : IF xposition IS rightCenter AND angle IS superiorUpObtuse THEN direction IS negativeMedium;
+	RULE 26 : IF xposition IS rightCenter AND angle IS superiorDownObtuse THEN direction IS negativeBig;
+	RULE 27 : IF xposition IS rightCenter AND angle IS inferiorAcute THEN direction IS negativeBig;
+	RULE 28 : IF xposition IS rightCenter AND angle IS inferiorObtuse THEN direction IS positiveBig;
+
+	RULE 29 : IF xposition IS right AND angle IS superiorDownAcute THEN direction IS zero;
+	RULE 30 : IF xposition IS right AND angle IS superiorUpAcute THEN direction IS negativeMedium;
+	RULE 31 : IF xposition IS right AND angle IS superiorRight THEN direction IS negativeBig;
+	RULE 32 : IF xposition IS right AND angle IS superiorUpObtuse THEN direction IS negativeBig;
+	RULE 33 : IF xposition IS right AND angle IS superiorDownObtuse THEN direction IS negativeBig;
+	RULE 34 : IF xposition IS right AND angle IS inferiorAcute THEN direction IS positiveBig;
+	RULE 35 : IF xposition IS right AND angle IS inferiorObtuse THEN direction IS positiveBig;
+
+END_RULEBLOCK
+
+END_FUNCTION_BLOCK
